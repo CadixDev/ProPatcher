@@ -1,0 +1,35 @@
+plugins {
+    id 'groovy'
+
+    id 'eclipse'
+    id 'idea'
+
+    id 'com.github.hierynomus.license' version '0.11.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = 'uk.jamierocks'
+version = '1.0-SNAPSHOT'
+description = 'The Gradle patching plugin.'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+}
+
+license {
+    header file('HEADER.txt')
+    include '**/*.java'
+    include '**/*.groovy'
+
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.7'
+}
