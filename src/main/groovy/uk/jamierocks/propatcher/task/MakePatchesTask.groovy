@@ -21,28 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package uk.jamierocks.propatcher
+package uk.jamierocks.propatcher.task
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import uk.jamierocks.propatcher.task.MakePatchesTask
+import org.gradle.api.DefaultTask
 
-class ProPatcherPlugin implements Plugin<Project> {
+class MakePatchesTask extends DefaultTask {
 
-    @Override
-    void apply(Project project) {
-        project.with {
-            ProPatcherExtension extension = extensions.create('patches', ProPatcherExtension)
-
-            task('makePatches', type: MakePatchesTask)
-
-            afterEvaluate {
-                tasks.makePatches.with {
-                    root = extension.root
-                    target = extension.target
-                    patches = extension.patches
-                }
-            }
-        }
-    }
+    File root
+    File target
+    File patches
 }
