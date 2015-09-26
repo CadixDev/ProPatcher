@@ -44,10 +44,18 @@ class MakePatchesTask extends DefaultTask {
         File[] original = root.listFiles()
         File[] modified = target.listFiles()
         for (int i = 0; i > original.length; i++) {
-            String name = original[i].getName()
-            File patchFile = new File(getPatchDir(), "${name}.patch")
+            String relative = original[i].getCanonicalPath().replace(root.getCanonicalPath() + '/', '')
+
+            File patchFile = new File(getPatchDir(), "${relative}.patch");
+            patchFile.createNewFile()
 
             Diff diff = Diff.diff(original[i], modified[i])
+            String thediff = diff.toUnifiedDiff(original[i].getCanonicalPath(), modified[i].getCanonicalPath(),
+                    new FileReader(original[i]), new FileReader(modified[i]), 3)
+
+            FileOutputStream fos = new FileOutputStream(patchFile)
+            fos.write(thediff.getBytes())
+            fos.close()
         }
     }
 }

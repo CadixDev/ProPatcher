@@ -1,10 +1,13 @@
 plugins {
     id 'groovy'
 
+    id 'maven'
+
     id 'eclipse'
     id 'idea'
 
     id 'com.github.hierynomus.license' version '0.11.0'
+    id 'com.github.johnrengelman.shadow' version '1.2.2'
 }
 
 sourceCompatibility = 1.8
@@ -15,6 +18,7 @@ version = '1.0-SNAPSHOT'
 description = 'The Gradle patching plugin.'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -33,6 +37,13 @@ license {
     strictCheck true
     mapping {
         java = 'SLASHSTAR_STYLE'
+    }
+}
+
+shadowJar {
+    classifier ''
+    dependencies {
+        include(dependency('com.cloudbees:diff4j'))
     }
 }
 
