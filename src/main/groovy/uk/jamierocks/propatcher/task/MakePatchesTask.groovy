@@ -23,11 +23,31 @@
  */
 package uk.jamierocks.propatcher.task
 
+import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
 
 class MakePatchesTask extends DefaultTask {
 
     File root
     File target
     File patches
+
+    @TaskAction
+    void doTask() {
+        patches.mkdirs() // Make sure patches directory exists.
+
+        process(root, target)
+    }
+
+    void process(File root, File target) {
+        File[] original = root.listFiles()
+        File[] modified = target.listFiles()
+        for (int i = 0; i > original.length; i++) {
+            String name = original[i].getName()
+            File patchFile = new File(getPatchDir(), "${name}.patch")
+
+            Diff diff = Diff.diff(original[i], modified[i])
+        }
+    }
 }
