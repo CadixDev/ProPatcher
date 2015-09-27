@@ -23,13 +23,11 @@
  */
 package uk.jamierocks.propatcher.task
 
-import com.beust.jcommander.internal.Sets
 import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 
 class MakePatchesTask extends DefaultTask {
@@ -40,9 +38,13 @@ class MakePatchesTask extends DefaultTask {
 
     @TaskAction
     void doTask() {
+        if (patches.isDirectory()) {
+            patches.deleteDir() // If exists, delete directory
+        }
+
         patches.mkdirs() // Make sure patches directory exists.
 
-        process(root, target)
+        process(root, target) // Make the patches
     }
 
     void process(File root, File target) {
@@ -50,20 +52,23 @@ class MakePatchesTask extends DefaultTask {
             if (filePath.toFile().isFile()) {
                 String relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
 
-                File patchFile = new File(patches, "${relative}.patch")
-                patchFile.parentFile.mkdirs()
-                patchFile.createNewFile()
-
                 File originalFile = new File(root, relative)
                 File modifiedFile = new File(target, relative)
 
                 Diff diff = Diff.diff(originalFile, modifiedFile, true)
-                String thediff = diff.toUnifiedDiff(originalFile.getCanonicalPath(), modifiedFile.getCanonicalPath(),
-                        new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
-                FileOutputStream fos = new FileOutputStream(patchFile)
-                fos.write(thediff.getBytes())
-                fos.close()
+                if (!diff.isEmpty()) {
+                    File patchFile = new File(patches, "${relative}.patch")
+                    patchFile.parentFile.mkdirs()
+                    patchFile.createNewFile()
+
+                    String thediff = diff.toUnifiedDiff(originalFile.getCanonicalPath(), modifiedFile.getCanonicalPath(),
+                            new FileReader(originalFile), new FileReader(modifiedFile), 3)
+
+                    FileOutputStream fos = new FileOutputStream(patchFile)
+                    fos.write(thediff.getBytes())
+                    fos.close()
+                }
             }
         }
     }
