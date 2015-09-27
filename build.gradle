@@ -7,7 +7,6 @@ plugins {
     id 'idea'
 
     id 'com.github.hierynomus.license' version '0.11.0'
-    id 'com.github.johnrengelman.shadow' version '1.2.2'
 }
 
 sourceCompatibility = 1.8
@@ -37,13 +36,6 @@ license {
     strictCheck true
     mapping {
         java = 'SLASHSTAR_STYLE'
-    }
-}
-
-shadowJar {
-    classifier ''
-    dependencies {
-        include(dependency('com.cloudbees:diff4j'))
     }
 }
 

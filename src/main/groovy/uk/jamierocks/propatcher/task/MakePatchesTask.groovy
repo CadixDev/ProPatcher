@@ -23,9 +23,14 @@
  */
 package uk.jamierocks.propatcher.task
 
+import com.beust.jcommander.internal.Sets
 import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class MakePatchesTask extends DefaultTask {
 
@@ -41,21 +46,25 @@ class MakePatchesTask extends DefaultTask {
     }
 
     void process(File root, File target) {
-        File[] original = root.listFiles()
-        File[] modified = target.listFiles()
-        for (int i = 0; i > original.length; i++) {
-            String relative = original[i].getCanonicalPath().replace(root.getCanonicalPath() + '/', '')
+        Files.walk(Paths.get(root.canonicalPath)).each { filePath ->
+            if (filePath.toFile().isFile()) {
+                String relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
 
-            File patchFile = new File(getPatchDir(), "${relative}.patch");
-            patchFile.createNewFile()
+                File patchFile = new File(patches, "${relative}.patch")
+                patchFile.parentFile.mkdirs()
+                patchFile.createNewFile()
 
-            Diff diff = Diff.diff(original[i], modified[i])
-            String thediff = diff.toUnifiedDiff(original[i].getCanonicalPath(), modified[i].getCanonicalPath(),
-                    new FileReader(original[i]), new FileReader(modified[i]), 3)
+                File originalFile = new File(root, relative)
+                File modifiedFile = new File(target, relative)
 
-            FileOutputStream fos = new FileOutputStream(patchFile)
-            fos.write(thediff.getBytes())
-            fos.close()
+                Diff diff = Diff.diff(originalFile, modifiedFile, true)
+                String thediff = diff.toUnifiedDiff(originalFile.getCanonicalPath(), modifiedFile.getCanonicalPath(),
+                        new FileReader(originalFile), new FileReader(modifiedFile), 3)
+
+                FileOutputStream fos = new FileOutputStream(patchFile)
+                fos.write(thediff.getBytes())
+                fos.close()
+            }
         }
     }
 }
