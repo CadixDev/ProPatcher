@@ -62,7 +62,7 @@ class MakePatchesTask extends DefaultTask {
                     patchFile.parentFile.mkdirs()
                     patchFile.createNewFile()
 
-                    String thediff = diff.toUnifiedDiff(originalFile.getCanonicalPath(), modifiedFile.getCanonicalPath(),
+                    String thediff = diff.toUnifiedDiff(relative, relative,
                             new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
                     FileOutputStream fos = new FileOutputStream(patchFile)
