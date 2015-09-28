@@ -21,34 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package uk.jamierocks.propatcher
+package uk.jamierocks.propatcher.task
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import uk.jamierocks.propatcher.task.MakePatchesTask
-import uk.jamierocks.propatcher.task.ResetSourcesTask
+import org.apache.commons.io.FileUtils
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
 
-class ProPatcherPlugin implements Plugin<Project> {
+class ResetSourcesTask extends DefaultTask {
 
-    @Override
-    void apply(Project project) {
-        project.with {
-            ProPatcherExtension extension = extensions.create('patches', ProPatcherExtension)
+    File root
+    File target
 
-            task('makePatches', type: MakePatchesTask)
-            task('resetSources', type: ResetSourcesTask)
-
-            afterEvaluate {
-                tasks.makePatches.with {
-                    root = extension.root
-                    target = extension.target
-                    patches = extension.patches
-                }
-                tasks.resetSources.with {
-                    root = extension.root
-                    target = extension.target
-                }
-            }
+    @TaskAction
+    void doTask() {
+        if (target.isDirectory()) {
+            target.deleteDir()
         }
+        FileUtils.copyDirectory(root, target)
     }
 }
