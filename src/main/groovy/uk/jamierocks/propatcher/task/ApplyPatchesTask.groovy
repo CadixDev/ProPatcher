@@ -21,42 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package uk.jamierocks.propatcher
+package uk.jamierocks.propatcher.task
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import uk.jamierocks.propatcher.task.ApplyPatchesTask
-import uk.jamierocks.propatcher.task.MakePatchesTask
-import uk.jamierocks.propatcher.task.ResetSourcesTask
+import com.cloudbees.diff.ContextualPatch
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
 
-class ProPatcherPlugin implements Plugin<Project> {
+import java.nio.file.Files
+import java.nio.file.Paths
 
-    @Override
-    void apply(Project project) {
-        project.with {
-            ProPatcherExtension extension = extensions.create('patches', ProPatcherExtension)
+class ApplyPatchesTask extends DefaultTask {
 
-            task('makePatches', type: MakePatchesTask)
-            task('applyPatches', type: ApplyPatchesTask) {
-                dependsOn 'resetSources'
-            }
-            task('resetSources', type: ResetSourcesTask)
+    File root
+    File target
+    File patches
 
-            afterEvaluate {
-                tasks.makePatches.with {
-                    root = extension.root
-                    target = extension.target
-                    patches = extension.patches
-                }
-                tasks.applyPatches.with {
-                    root = extension.root
-                    target = extension.target
-                    patches = extension.patches
-                }
-                tasks.resetSources.with {
-                    root = extension.root
-                    target = extension.target
-                }
+    @TaskAction
+    void doTask() {
+        Files.walk(Paths.get(patches.canonicalPath)).each { filePath ->
+            if (filePath.toFile().isFile()) {
+                String relative = filePath.toString().replace(patches.getCanonicalPath() + '/', '')
+
+                ContextualPatch patch = ContextualPatch.create(filePath.toFile(), new File(target, relative))
+                patch.patch(false)
             }
         }
     }

@@ -2,6 +2,7 @@ plugins {
     id 'groovy'
 
     id 'maven'
+    id 'com.gradle.plugin-publish' version '0.9.1'
 
     id 'eclipse'
     id 'idea'
@@ -13,7 +14,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.0-SNAPSHOT'
+version = '1.0'
 description = 'The Gradle patching plugin.'
 
 repositories {
@@ -37,6 +38,20 @@ license {
     strictCheck true
     mapping {
         java = 'SLASHSTAR_STYLE'
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/jamierocks/propatcher'
+    vcsUrl = 'https://github.com/jamierocks/propatcher'
+    description = project.description
+    tags = ['patches']
+
+    plugins {
+        gitpatcherPlugin {
+            id = 'uk.jamierocks.propatcher'
+            displayName = 'propatcher'
+        }
     }
 }
 
