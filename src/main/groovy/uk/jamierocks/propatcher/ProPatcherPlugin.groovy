@@ -49,7 +49,6 @@ class ProPatcherPlugin implements Plugin<Project> {
                     patches = extension.patches
                 }
                 tasks.applyPatches.with {
-                    root = extension.root
                     target = extension.target
                     patches = extension.patches
                 }

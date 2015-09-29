@@ -51,7 +51,6 @@ class MakePatchesTask extends DefaultTask {
         Files.walk(Paths.get(root.canonicalPath)).each { filePath ->
             if (Files.isRegularFile(filePath)) {
                 String relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
-                println relative
 
                 File originalFile = new File(root, relative)
                 File modifiedFile = new File(target, relative)
@@ -63,13 +62,12 @@ class MakePatchesTask extends DefaultTask {
                     patchFile.parentFile.mkdirs()
                     patchFile.createNewFile()
 
-                    String thediff = diff.toUnifiedDiff(relative, relative,
+                    String unifiedDiff = diff.toUnifiedDiff(relative, relative,
                             new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
-                    new FileOutputStream(patchFile).withStream {
-                        write(thediff.getBytes())
-                        close()
-                    }
+                    FileOutputStream fos = new FileOutputStream(patchFile)
+                    fos.write(unifiedDiff.getBytes())
+                    fos.close()
                 }
             }
         }

@@ -32,14 +32,13 @@ import java.nio.file.Paths
 
 class ApplyPatchesTask extends DefaultTask {
 
-    File root
     File target
     File patches
 
     @TaskAction
     void doTask() {
         Files.walk(Paths.get(patches.canonicalPath)).each { filePath ->
-            if (filePath.toFile().isFile()) {
+            if (Files.isRegularFile(filePath)) {
                 String relative = filePath.toString().replace(patches.getCanonicalPath() + '/', '')
 
                 ContextualPatch patch = ContextualPatch.create(filePath.toFile(), new File(target, relative))
