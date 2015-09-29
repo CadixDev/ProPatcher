@@ -14,7 +14,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.0'
+version = '1.1-SNAPSHOT'
 description = 'The Gradle patching plugin.'
 
 repositories {
@@ -48,7 +48,7 @@ pluginBundle {
     tags = ['patches']
 
     plugins {
-        gitpatcherPlugin {
+        propatcherPlugin {
             id = 'uk.jamierocks.propatcher'
             displayName = 'propatcher'
         }
