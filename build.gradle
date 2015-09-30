@@ -15,7 +15,7 @@ targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
 version = '1.1-SNAPSHOT'
-description = 'The Gradle patching plugin.'
+description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
     mavenLocal()
