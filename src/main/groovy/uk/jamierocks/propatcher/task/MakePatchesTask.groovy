@@ -66,7 +66,9 @@ class MakePatchesTask extends DefaultTask {
                     String unifiedDiff = diff.toUnifiedDiff(relative, relative,
                             new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
-                    patchFile.newOutputStream().withStream { s -> s.write(unifiedDiff.getBytes()) }
+                    patchFile.newOutputStream().withStream {
+                        s -> s.write(unifiedDiff.getBytes(Charset.forName("utf-8")))
+                    }
                 }
             }
         }
