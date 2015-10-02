@@ -27,6 +27,7 @@ import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -65,9 +66,7 @@ class MakePatchesTask extends DefaultTask {
                     String unifiedDiff = diff.toUnifiedDiff(relative, relative,
                             new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
-                    FileOutputStream fos = new FileOutputStream(patchFile)
-                    fos.write(unifiedDiff.getBytes())
-                    fos.close()
+                    patchFile.newOutputStream().withStream { s -> s.write(unifiedDiff.getBytes()) }
                 }
             }
         }
