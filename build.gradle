@@ -7,14 +7,14 @@ plugins {
     id 'eclipse'
     id 'idea'
 
-    id 'com.github.hierynomus.license' version '0.11.0'
+    id 'net.minecrell.licenser' version '0.2'
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.2-SNAPSHOT'
+version = '1.2.0-SNAPSHOT'
 description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
@@ -34,11 +34,6 @@ license {
     header file('HEADER.txt')
     include '**/*.java'
     include '**/*.groovy'
-
-    strictCheck true
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
 }
 
 pluginBundle {
@@ -56,5 +51,5 @@ pluginBundle {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.7'
+    gradleVersion = '2.13'
 }
