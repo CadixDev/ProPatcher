@@ -27,9 +27,11 @@ package uk.jamierocks.propatcher.task
 import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import uk.jamierocks.propatcher.ProPatcherPlugin
 
 import java.nio.charset.Charset
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 class MakePatchesTask extends DefaultTask {
@@ -50,26 +52,60 @@ class MakePatchesTask extends DefaultTask {
     }
 
     void process(File root, File target) {
+        final List<Path> paths = new ArrayList<>()
+
         Files.walk(Paths.get(root.canonicalPath)).each { filePath ->
             if (Files.isRegularFile(filePath)) {
-                String relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
+                if (!paths.contains(filePath)) {
+                    paths.add(filePath)
+                }
+            }
+        }
 
-                File originalFile = new File(root, relative)
-                File modifiedFile = new File(target, relative)
+        Files.walk(Paths.get(target.canonicalPath)).each { filePath ->
+            if (Files.isRegularFile(filePath)) {
+                if (!paths.contains(filePath)) {
+                    paths.add(filePath)
+                }
+            }
+        }
 
-                Diff diff = Diff.diff(originalFile, modifiedFile, true)
+        for (Path filePath : paths) {
+            String relative = ''
+            if (filePath.toString().startsWith(root.getCanonicalPath())) {
+                relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
+            } else if (filePath.toString().startsWith(target.getCanonicalPath())) {
+                relative = filePath.toString().replace(target.getCanonicalPath() + '/', '')
+            }
 
-                if (!diff.isEmpty()) {
-                    File patchFile = new File(patches, "${relative}.patch")
-                    patchFile.parentFile.mkdirs()
-                    patchFile.createNewFile()
+            String originalRelative = relative
+            String modifiedRelative = relative
 
-                    String unifiedDiff = diff.toUnifiedDiff(relative, relative,
-                            new FileReader(originalFile), new FileReader(modifiedFile), 3)
+            File originalFile = new File(root, relative)
+            File modifiedFile = new File(target, relative)
 
-                    patchFile.newOutputStream().withStream {
-                        s -> s.write(unifiedDiff.getBytes(Charset.forName("utf-8")))
-                    }
+            if (!originalFile.exists()) {
+                originalFile = ProPatcherPlugin.DEV_NULL
+                originalRelative = originalFile.getCanonicalPath()
+            }
+
+            if (!modifiedFile.exists()) {
+                modifiedFile = ProPatcherPlugin.DEV_NULL
+                modifiedRelative = modifiedFile.getCanonicalPath()
+            }
+
+            Diff diff = Diff.diff(originalFile, modifiedFile, true)
+
+            if (!diff.isEmpty()) {
+                File patchFile = new File(patches, "${relative}.patch")
+                patchFile.parentFile.mkdirs()
+                patchFile.createNewFile()
+
+                String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
+                        new FileReader(originalFile), new FileReader(modifiedFile), 3)
+
+                patchFile.newOutputStream().withStream {
+                    s -> s.write(unifiedDiff.getBytes(Charset.forName("utf-8")))
                 }
             }
         }
