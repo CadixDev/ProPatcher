@@ -78,8 +78,8 @@ class MakePatchesTask extends DefaultTask {
                 relative = filePath.toString().replace(target.getCanonicalPath() + '/', '')
             }
 
-            String originalRelative = relative
-            String modifiedRelative = relative
+            String originalRelative = 'a/' + relative
+            String modifiedRelative = 'b/' + relative
 
             File originalFile = new File(root, relative)
             File modifiedFile = new File(target, relative)

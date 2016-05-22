@@ -40,9 +40,7 @@ class ApplyPatchesTask extends DefaultTask {
     void doTask() {
         Files.walk(Paths.get(patches.canonicalPath)).each { filePath ->
             if (Files.isRegularFile(filePath)) {
-                String relative = filePath.toString().replace(patches.getCanonicalPath() + '/', '')
-
-                ContextualPatch patch = ContextualPatch.create(filePath.toFile(), new File(target, relative))
+                ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
                 patch.patch(false)
             }
         }
