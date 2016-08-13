@@ -2,19 +2,19 @@ plugins {
     id 'groovy'
 
     id 'maven'
-    id 'com.gradle.plugin-publish' version '0.9.1'
+    id 'com.gradle.plugin-publish' version '0.9.5'
 
     id 'eclipse'
     id 'idea'
 
-    id 'net.minecrell.licenser' version '0.2'
+    id 'net.minecrell.licenser' version '0.2.1'
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.2.0'
+version = '1.2.1'
 description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
@@ -37,8 +37,8 @@ license {
 }
 
 pluginBundle {
-    website = 'https://github.com/jamierocks/propatcher'
-    vcsUrl = 'https://github.com/jamierocks/propatcher'
+    website = 'https://github.com/jamierocks/ProPatcher'
+    vcsUrl = 'https://github.com/jamierocks/ProPatcher'
     description = project.description
     tags = ['patches']
 

@@ -10,7 +10,7 @@ You can find the plugin [here](https://plugins.gradle.org/plugin/uk.jamierocks.p
 
 ```gradle
 plugins {
-  id "uk.jamierocks.propatcher" version "1.1"
+  id "uk.jamierocks.propatcher" version "1.2.1"
 }
 ```
 
@@ -24,7 +24,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.uk.jamierocks:propatcher:1.1"
+    classpath "gradle.plugin.uk.jamierocks:propatcher:1.2.1"
   }
 }
 

@@ -87,11 +87,21 @@ class MakePatchesTask extends DefaultTask {
             if (!originalFile.exists()) {
                 originalFile = ProPatcherPlugin.DEV_NULL
                 originalRelative = originalFile.getCanonicalPath()
+
+                // Hack to work on Windows
+                if (System.getProperty('os.name').toLowerCase().contains('win')) {
+                    originalFile = ProPatcherPlugin.WINDOWS_NUL
+                }
             }
 
             if (!modifiedFile.exists()) {
                 modifiedFile = ProPatcherPlugin.DEV_NULL
                 modifiedRelative = modifiedFile.getCanonicalPath()
+
+                // Hack to work on Windows
+                if (System.getProperty('os.name').toLowerCase().contains('win')) {
+                    modifiedFile = ProPatcherPlugin.WINDOWS_NUL
+                }
             }
 
             Diff diff = Diff.diff(originalFile, modifiedFile, true)
