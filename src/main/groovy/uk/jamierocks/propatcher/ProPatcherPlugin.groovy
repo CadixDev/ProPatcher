@@ -32,7 +32,7 @@ import uk.jamierocks.propatcher.task.ResetSourcesTask
 
 class ProPatcherPlugin implements Plugin<Project> {
 
-    static final File DEV_NULL = new File("/dev/null")
+    static final File DEV_NULL
 
     @Override
     void apply(Project project) {
@@ -60,6 +60,14 @@ class ProPatcherPlugin implements Plugin<Project> {
                     target = extension.target
                 }
             }
+        }
+    }
+
+    static {
+        if (System.getProperty('os.name').toLowerCase().contains('win')) {
+            DEV_NULL = new File('C:\\nul')
+        } else {
+            DEV_NULL = new File('/dev/null')
         }
     }
 }
