@@ -72,10 +72,11 @@ class MakePatchesTask extends DefaultTask {
 
         for (Path filePath : paths) {
             String relative = ''
+
             if (filePath.toString().startsWith(root.getCanonicalPath())) {
-                relative = filePath.toString().replace(root.getCanonicalPath() + '/', '')
+                relative = filePath.toString().replace(root.getCanonicalPath() + File.separator, '')
             } else if (filePath.toString().startsWith(target.getCanonicalPath())) {
-                relative = filePath.toString().replace(target.getCanonicalPath() + '/', '')
+                relative = filePath.toString().replace(target.getCanonicalPath() + File.separator, '')
             }
 
             String originalRelative = 'a/' + relative
