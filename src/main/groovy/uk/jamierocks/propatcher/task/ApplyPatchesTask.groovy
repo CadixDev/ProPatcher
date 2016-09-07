@@ -38,6 +38,10 @@ class ApplyPatchesTask extends DefaultTask {
 
     @TaskAction
     void doTask() {
+        if (!patches.exists()) {
+            patches.mkdirs() // Make sure patches directory exists
+        }
+
         Files.walk(Paths.get(patches.canonicalPath)).each { filePath ->
             if (Files.isRegularFile(filePath)) {
                 ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
@@ -45,4 +49,5 @@ class ApplyPatchesTask extends DefaultTask {
             }
         }
     }
+
 }

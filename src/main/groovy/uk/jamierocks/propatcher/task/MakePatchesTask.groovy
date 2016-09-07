@@ -116,9 +116,10 @@ class MakePatchesTask extends DefaultTask {
                         new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
                 patchFile.newOutputStream().withStream {
-                    s -> s.write(unifiedDiff.getBytes(Charset.forName("utf-8")))
+                    s -> s.write(unifiedDiff.getBytes(Charset.forName("UTF-8")))
                 }
             }
         }
     }
+
 }

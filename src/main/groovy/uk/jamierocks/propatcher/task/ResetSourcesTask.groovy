@@ -40,4 +40,5 @@ class ResetSourcesTask extends DefaultTask {
         }
         FileUtils.copyDirectory(root, target)
     }
+
 }

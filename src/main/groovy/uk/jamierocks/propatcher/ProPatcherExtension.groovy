@@ -31,4 +31,5 @@ class ProPatcherExtension {
     File target
 
     File patches
+
 }
