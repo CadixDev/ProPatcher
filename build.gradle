@@ -1,20 +1,19 @@
 plugins {
     id 'groovy'
-
     id 'maven'
-    id 'com.gradle.plugin-publish' version '0.9.5'
 
-    id 'eclipse'
     id 'idea'
+    id 'eclipse'
 
-    id 'net.minecrell.licenser' version '0.2.1'
+    id 'com.gradle.plugin-publish' version '0.9.7'
+    id 'net.minecrell.licenser' version '0.3'
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.2.3'
+version = '1.2.4-SNAPSHOT'
 description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
@@ -32,8 +31,6 @@ dependencies {
 
 license {
     header file('HEADER.txt')
-    include '**/*.java'
-    include '**/*.groovy'
 }
 
 pluginBundle {
@@ -51,5 +48,5 @@ pluginBundle {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
+    gradleVersion = '2.14.1'
 }
