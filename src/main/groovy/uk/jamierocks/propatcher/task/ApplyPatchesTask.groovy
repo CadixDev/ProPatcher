@@ -30,23 +30,47 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
+import java.nio.file.Path
 
 class ApplyPatchesTask extends DefaultTask {
 
+    File root
     File target
     File patches
+    boolean copyPosixPermissions
 
     @TaskAction
     void doTask() {
+        // Make sure patches directory exists
         if (!patches.exists()) {
-            patches.mkdirs() // Make sure patches directory exists
+            patches.mkdirs()
         }
 
+        // Patch target source set
         Files.walk(patches.toPath())
                 .filter { path -> Files.isRegularFile(path) }
                 .each { filePath ->
             ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
             patch.patch(false)
+        }
+
+        // Copy permissions from root source set to patched source set
+        Files.walk(root.toPath())
+                .filter { path -> Files.isRegularFile(path) }
+                .filter { path -> copyPosixPermissions }
+                .each { originalPath ->
+            final String relative = {
+                if (originalPath.toString().startsWith(root.getCanonicalPath())) {
+                    return originalPath.toString().replace(root.getCanonicalPath() + File.separator, '')
+                } else {
+                    return originalPath.toString()
+                }
+            }
+
+            final Path modifiedPath = target.toPath().resolve(relative)
+            if (Files.exists(modifiedPath)) {
+                Files.setPosixFilePermissions(modifiedPath, Files.getPosixFilePermissions(originalPath))
+            }
         }
     }
 

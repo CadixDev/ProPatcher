@@ -33,4 +33,6 @@ class ProPatcherExtension {
 
     File patches
 
+    boolean copyPosixPermissions = false
+
 }
