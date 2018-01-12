@@ -30,7 +30,6 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
-import java.nio.file.Paths
 
 class ApplyPatchesTask extends DefaultTask {
 
@@ -43,11 +42,11 @@ class ApplyPatchesTask extends DefaultTask {
             patches.mkdirs() // Make sure patches directory exists
         }
 
-        Files.walk(Paths.get(patches.canonicalPath)).each { filePath ->
-            if (Files.isRegularFile(filePath)) {
-                ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
-                patch.patch(false)
-            }
+        Files.walk(patches.toPath())
+                .filter { path -> Files.isRegularFile(path) }
+                .each { filePath ->
+            ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
+            patch.patch(false)
         }
     }
 

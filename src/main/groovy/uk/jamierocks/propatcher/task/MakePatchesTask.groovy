@@ -30,10 +30,9 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import uk.jamierocks.propatcher.ProPatcherPlugin
 
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class MakePatchesTask extends DefaultTask {
 
@@ -55,29 +54,25 @@ class MakePatchesTask extends DefaultTask {
     void process(File root, File target) {
         final List<Path> paths = new ArrayList<>()
 
-        Files.walk(Paths.get(root.canonicalPath)).each { filePath ->
-            if (Files.isRegularFile(filePath)) {
-                if (!paths.contains(filePath)) {
-                    paths.add(filePath)
+        Files.walk(root.toPath())
+                .filter { path -> Files.isRegularFile(path) }
+                .filter { path -> !paths.contains(path) }
+                .each { path -> paths.add(path) }
+
+        Files.walk(target.toPath())
+                .filter { path -> Files.isRegularFile(path) }
+                .filter { path -> !paths.contains(path) }
+                .each { path -> paths.add(path) }
+
+        for (final Path filePath : paths) {
+            final String relative = {
+                if (filePath.toString().startsWith(root.getCanonicalPath())) {
+                    return filePath.toString().replace(root.getCanonicalPath() + File.separator, '')
+                } else if (filePath.toString().startsWith(target.getCanonicalPath())) {
+                    return filePath.toString().replace(target.getCanonicalPath() + File.separator, '')
+                } else {
+                    return filePath.toString()
                 }
-            }
-        }
-
-        Files.walk(Paths.get(target.canonicalPath)).each { filePath ->
-            if (Files.isRegularFile(filePath)) {
-                if (!paths.contains(filePath)) {
-                    paths.add(filePath)
-                }
-            }
-        }
-
-        for (Path filePath : paths) {
-            String relative = ''
-
-            if (filePath.toString().startsWith(root.getCanonicalPath())) {
-                relative = filePath.toString().replace(root.getCanonicalPath() + File.separator, '')
-            } else if (filePath.toString().startsWith(target.getCanonicalPath())) {
-                relative = filePath.toString().replace(target.getCanonicalPath() + File.separator, '')
             }
 
             String originalRelative = 'a/' + relative
@@ -106,18 +101,18 @@ class MakePatchesTask extends DefaultTask {
                 }
             }
 
-            Diff diff = Diff.diff(originalFile, modifiedFile, true)
+            final Diff diff = Diff.diff(originalFile, modifiedFile, true)
 
             if (!diff.isEmpty()) {
-                File patchFile = new File(patches, "${relative}.patch")
+                final File patchFile = new File(patches, "${relative}.patch")
                 patchFile.parentFile.mkdirs()
                 patchFile.createNewFile()
 
-                String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
+                final String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
                         new FileReader(originalFile), new FileReader(modifiedFile), 3)
 
                 patchFile.newOutputStream().withStream {
-                    s -> s.write(unifiedDiff.getBytes(Charset.forName("UTF-8")))
+                    s -> s.write(unifiedDiff.getBytes(StandardCharsets.UTF_8))
                 }
             }
         }
