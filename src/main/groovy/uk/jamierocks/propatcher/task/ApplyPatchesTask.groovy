@@ -50,8 +50,6 @@ class ApplyPatchesTask extends DefaultTask {
                 patch.patch(false).each { report ->
                     if (report.status == PatchStatus.Patched) {
                         report.originalBackupFile.delete() //lets delete the backup because spam
-                        if (report.file.text == '') //Empty result == patch deleted file, so lets delete!
-                            report.file.delete()
                     } else {
                         failed = true
                         println 'Failed to apply: ' + file
@@ -60,6 +58,10 @@ class ApplyPatchesTask extends DefaultTask {
                 }
             }
         }
+        def NUL = new File('/dev/null')
+        if (System.getProperty('os.name').toLowerCase().contains('win') && NUL.exists()) //patcher is standerdized to create /dev/null targets even on windows, so delete this to clean that up
+            NUL.delete()
+            
         if (failed)
             throw new RuntimeException('One or more patches failed to apply, see log for details')
     }

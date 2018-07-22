@@ -67,7 +67,7 @@ class MakePatchesTask extends DefaultTask {
 
     void process(File root, File target) {
         def paths = []
-        target.eachFileRecurse(FileType.FILES){ file -> if (!file.endsWith('~')) paths.add relative(target, file) }
+        target.eachFileRecurse(FileType.FILES){ file -> if (!file.path.endsWith('~')) paths.add relative(target, file) }
         if (root.isDirectory()) {
             root.eachFileRecurse(FileType.FILES) { file ->
                 def relative = relative(root, file)
@@ -87,8 +87,8 @@ class MakePatchesTask extends DefaultTask {
     }
     
     def makePatch(relative, original, modified) {
-        String originalRelative = originalPrefix + relative
-        String modifiedRelative = modifiedPrefix + relative
+        String originalRelative = original == null ? '/dev/null' : originalPrefix + relative
+        String modifiedRelative = !modified.exists() ? '/dev/null' : modifiedPrefix + relative
         
         def originalData = original == null ? "" : original.getText("UTF-8")
         def modifiedData = !modified.exists() ? "" : modified.getText("UTF-8")
