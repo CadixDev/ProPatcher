@@ -25,97 +25,87 @@
 
 package uk.jamierocks.propatcher.task
 
+import groovy.io.FileType
+
 import com.cloudbees.diff.Diff
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import uk.jamierocks.propatcher.ProPatcherPlugin
 
+import java.io.FileReader
+import java.io.StringReader
+import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.regex.Matcher
+import java.util.zip.ZipFile
 
 class MakePatchesTask extends DefaultTask {
+    @Input File root
+    @Input File target
+    @Input File patches
+    @Input @Optional String originalPrefix = 'a/'
+    @Input @Optional String modifiedPrefix = 'b/'
 
-    File root
-    File target
-    File patches
-
+    def relative(base, file) {
+        return file.path.substring(target.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
+    }
+    def deleteEmpty(base) {
+        def dirs = []
+        base.eachFileRecurse(FileType.DIRECTORIES){ file -> if (file.list().length == 0) dirs.add(file) }
+        dirs.reverse().each{ it.delete() } //Do it in reverse order do we delete deepest first
+    }
+    
     @TaskAction
     void doTask() {
-        if (patches.isDirectory()) {
-            patches.deleteDir() // If exists, delete directory
-        }
-
-        patches.mkdirs() // Make sure patches directory exists.
+        if (!patches.exists())
+            patches.mkdirs()
 
         process(root, target) // Make the patches
     }
 
     void process(File root, File target) {
-        final List<Path> paths = new ArrayList<>()
-
-        Files.walk(root.toPath())
-                .filter { path -> Files.isRegularFile(path) }
-                .filter { path -> !paths.contains(path) }
-                .each { path -> paths.add(path) }
-
-        Files.walk(target.toPath())
-                .filter { path -> Files.isRegularFile(path) }
-                .filter { path -> !paths.contains(path) }
-                .each { path -> paths.add(path) }
-
-        for (final Path filePath : paths) {
-            final String relative = {
-                if (filePath.toString().startsWith(root.getCanonicalPath())) {
-                    return filePath.toString().replace(root.getCanonicalPath() + File.separator, '')
-                } else if (filePath.toString().startsWith(target.getCanonicalPath())) {
-                    return filePath.toString().replace(target.getCanonicalPath() + File.separator, '')
-                } else {
-                    return filePath.toString()
-                }
+        def paths = []
+        target.eachFileRecurse(FileType.FILES){ file -> if (!file.endsWith('~')) paths.add relative(target, file) }
+        if (root.isDirectory()) {
+            root.eachFileRecurse(FileType.FILES) { file ->
+                def relative = relative(root, file)
+                file.withInputStream{stream -> makePatch(relative, stream, new File(target, relative))}
+                paths.remove(relative)
             }
-
-            String originalRelative = 'a/' + relative
-            String modifiedRelative = 'b/' + relative
-
-            File originalFile = new File(root, relative)
-            File modifiedFile = new File(target, relative)
-
-            if (!originalFile.exists()) {
-                originalFile = ProPatcherPlugin.DEV_NULL
-                originalRelative = originalFile.getCanonicalPath()
-
-                // Hack to work on Windows
-                if (System.getProperty('os.name').toLowerCase().contains('win')) {
-                    originalFile = ProPatcherPlugin.WINDOWS_NUL
-                }
-            }
-
-            if (!modifiedFile.exists()) {
-                modifiedFile = ProPatcherPlugin.DEV_NULL
-                modifiedRelative = modifiedFile.getCanonicalPath()
-
-                // Hack to work on Windows
-                if (System.getProperty('os.name').toLowerCase().contains('win')) {
-                    modifiedFile = ProPatcherPlugin.WINDOWS_NUL
-                }
-            }
-
-            final Diff diff = Diff.diff(originalFile, modifiedFile, true)
-
-            if (!diff.isEmpty()) {
-                final File patchFile = new File(patches, "${relative}.patch")
-                patchFile.parentFile.mkdirs()
-                patchFile.createNewFile()
-
-                final String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
-                        new FileReader(originalFile), new FileReader(modifiedFile), 3)
-
-                patchFile.newOutputStream().withStream {
-                    s -> s.write(unifiedDiff.getBytes(StandardCharsets.UTF_8))
+        } else {
+            def zip = new ZipFile(root)
+            zip.entries().each { ent ->
+                if (!ent.isDirectory()) {
+                    makePatch(ent.name, zip.getInputStream(ent), new File(target, ent.name))
+                    paths.remove(ent.name)
                 }
             }
         }
+        paths.each{ makePatch(it, null, new File(target, it)) } //Added files!
     }
+    
+    def makePatch(relative, original, modified) {
+        String originalRelative = originalPrefix + relative
+        String modifiedRelative = modifiedPrefix + relative
+        
+        def originalData = original == null ? "" : original.getText("UTF-8")
+        def modifiedData = !modified.exists() ? "" : modified.getText("UTF-8")
 
+        final Diff diff = Diff.diff(new StringReader(originalData), new StringReader(modifiedData), true)
+
+        if (!diff.isEmpty()) {
+            final File patchFile = new File(patches, "${relative}.patch")
+            patchFile.parentFile.mkdirs()
+            patchFile.createNewFile()
+
+            final String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
+                    new StringReader(originalData), new StringReader(modifiedData), 3)
+
+            patchFile.newOutputStream().withStream {
+                s -> s.write(unifiedDiff.getBytes(StandardCharsets.UTF_8))
+            }
+        }
+    }
 }

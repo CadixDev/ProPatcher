@@ -25,11 +25,12 @@
 
 package uk.jamierocks.propatcher.task
 
+import groovy.io.FileType
+
 import com.cloudbees.diff.ContextualPatch
+import com.cloudbees.diff.ContextualPatch.PatchStatus
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-
-import java.nio.file.Files
 
 class ApplyPatchesTask extends DefaultTask {
 
@@ -42,12 +43,25 @@ class ApplyPatchesTask extends DefaultTask {
             patches.mkdirs() // Make sure patches directory exists
         }
 
-        Files.walk(patches.toPath())
-                .filter { path -> Files.isRegularFile(path) }
-                .each { filePath ->
-            ContextualPatch patch = ContextualPatch.create(filePath.toFile(), target)
-            patch.patch(false)
+        boolean failed = false
+        patches.eachFileRecurse(FileType.FILES) { file ->
+            if (file.path.endsWith('.patch')) {
+                ContextualPatch patch = ContextualPatch.create(file, target)
+                patch.patch(false).each { report ->
+                    if (report.status == PatchStatus.Patched) {
+                        report.originalBackupFile.delete() //lets delete the backup because spam
+                        if (report.file.text == '') //Empty result == patch deleted file, so lets delete!
+                            report.file.delete()
+                    } else {
+                        failed = true
+                        println 'Failed to apply: ' + file
+                        report.failure.printStackTrace()
+                    }
+                }
+            }
         }
+        if (failed)
+            throw new RuntimeException('One or more patches failed to apply, see log for details')
     }
 
 }

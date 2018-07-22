@@ -25,21 +25,75 @@
 
 package uk.jamierocks.propatcher.task
 
-import org.apache.commons.io.FileUtils
+import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import java.util.regex.Matcher
+import java.util.zip.ZipFile
 
 class ResetSourcesTask extends DefaultTask {
 
     File root
     File target
 
+    def relative(base, file) {
+        return file.path.substring(target.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
+    }
+    def deleteEmpty(base) {
+        def dirs = []
+        base.eachFileRecurse(FileType.DIRECTORIES){ file -> if (file.list().length == 0) dirs.add(file) }
+        dirs.reverse().each{ it.delete() } //Do it in reverse order do we delete deepest first
+    }
+    
     @TaskAction
     void doTask() {
-        if (target.isDirectory()) {
-            target.deleteDir()
+        def existing = []
+        if (!target.exists())
+            target.mkdirs()
+        target.eachFileRecurse(FileType.FILES){ file -> existing.add relative(target, file) }
+        if (root.isDirectory()) {
+            root.eachFileRecurse { file ->
+                def relative = relative(root, file)
+                def output = new File(target, relative)
+                if (file.isDirectory()) {
+                    if (!output.exists())
+                        output.mkdirs()
+                } else {
+                    def data = file.bytes
+                    if (output.exists()) {
+                        if (data != output.bytes) //We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                            output.bytes = data
+                    } else {
+                        if (!output.parentFile.exists())
+                            output.parentFile.mkdirs()
+                        output.bytes = data
+                    }
+                    existing.remove(relative)
+                }
+            }
+        } else {
+            def zip = new ZipFile(root)
+            zip.entries().each { ent ->
+                def output = new File(target, ent.name)
+                if (ent.isDirectory()) {
+                    if (!output.exists())
+                        output.mkdirs()
+                } else {
+                    def data = zip.getInputStream(ent).bytes
+                    if (output.exists()) {
+                        if (data != output.bytes) //We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                            output.bytes = data
+                    } else {
+                        if (!output.parentFile.exists())
+                            output.parentFile.mkdirs()
+                        output.bytes = data
+                    }
+                    existing.remove(ent.name)
+                }
+            }
         }
-        FileUtils.copyDirectory(root, target)
+        
+        existing.each{ file -> new File(target, file).delete() } //Delete extra files
+        deleteEmpty(target)
     }
-
 }
