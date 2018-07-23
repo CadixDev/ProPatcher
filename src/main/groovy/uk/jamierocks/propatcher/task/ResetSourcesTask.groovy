@@ -37,7 +37,7 @@ class ResetSourcesTask extends DefaultTask {
     File target
 
     def relative(base, file) {
-        return file.path.substring(target.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
+        return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
     }
     def deleteEmpty(base) {
         def dirs = []
