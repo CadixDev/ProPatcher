@@ -48,6 +48,8 @@ class ProPatcherPlugin implements Plugin<Project> {
                     root = extension.root
                     target = extension.target
                     patches = extension.patches
+                    originalPrefix = extension.originalPrefix
+                    modifiedPrefix = extension.modifiedPrefix
                 }
                 tasks.applyPatches.with {
                     target = extension.target

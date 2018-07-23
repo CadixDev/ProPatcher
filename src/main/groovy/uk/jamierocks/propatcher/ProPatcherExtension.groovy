@@ -33,4 +33,8 @@ class ProPatcherExtension {
 
     File patches
 
+    String originalPrefix = 'a/'
+
+    String modifiedPrefix = 'b/'
+
 }

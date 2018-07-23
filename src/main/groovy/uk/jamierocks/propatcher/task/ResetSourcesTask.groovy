@@ -36,10 +36,11 @@ class ResetSourcesTask extends DefaultTask {
     File root
     File target
 
-    def relative(base, file) {
+    static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
     }
-    def deleteEmpty(base) {
+
+    static def deleteEmpty(base) {
         def dirs = []
         base.eachFileRecurse(FileType.DIRECTORIES){ file -> if (file.list().length == 0) dirs.add(file) }
         dirs.reverse().each{ it.delete() } //Do it in reverse order do we delete deepest first

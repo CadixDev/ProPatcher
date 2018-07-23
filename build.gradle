@@ -13,7 +13,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = 'uk.jamierocks'
-version = '1.2.4-SNAPSHOT'
+version = '1.3.0-SNAPSHOT'
 description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
@@ -26,7 +26,6 @@ dependencies {
     compile localGroovy()
 
     compile 'com.cloudbees:diff4j:1.2'
-    compile 'org.apache.commons:commons-io:1.3.2'
 }
 
 license {
@@ -34,8 +33,8 @@ license {
 }
 
 pluginBundle {
-    website = 'https://github.com/jamierocks/ProPatcher'
-    vcsUrl = 'https://github.com/jamierocks/ProPatcher'
+    website = 'https://github.com/jamiemansfield/ProPatcher'
+    vcsUrl = 'https://github.com/jamiemansfield/ProPatcher'
     description = project.description
     tags = ['patches']
 

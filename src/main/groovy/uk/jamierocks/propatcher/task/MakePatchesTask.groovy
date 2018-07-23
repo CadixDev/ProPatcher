@@ -25,33 +25,30 @@
 
 package uk.jamierocks.propatcher.task
 
-import groovy.io.FileType
-
 import com.cloudbees.diff.Diff
+import groovy.io.FileType
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.*
-import uk.jamierocks.propatcher.ProPatcherPlugin
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.TaskAction
 
-import java.io.FileReader
-import java.io.StringReader
-import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 
 class MakePatchesTask extends DefaultTask {
+
     @Input File root
     @Input File target
     @Input File patches
     @Input @Optional String originalPrefix = 'a/'
     @Input @Optional String modifiedPrefix = 'b/'
 
-    def relative(base, file) {
+    static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
     }
-    def deleteEmpty(base) {
+
+    static def deleteEmpty(base) {
         def dirs = []
         base.eachFileRecurse(FileType.DIRECTORIES){ file -> if (file.list().length == 0) dirs.add(file) }
         dirs.reverse().each{ it.delete() } //Do it in reverse order do we delete deepest first
@@ -108,4 +105,5 @@ class MakePatchesTask extends DefaultTask {
             }
         }
     }
+
 }
