@@ -29,6 +29,7 @@ import groovy.io.FileType
 
 import com.cloudbees.diff.ContextualPatch
 import com.cloudbees.diff.ContextualPatch.PatchStatus
+import com.cloudbees.diff.PatchException
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
@@ -53,7 +54,10 @@ class ApplyPatchesTask extends DefaultTask {
                     } else {
                         failed = true
                         println 'Failed to apply: ' + file
-                        report.failure.printStackTrace()
+                        if (report.failure instanceof PatchException)
+                            println '    ' + report.failure.message
+                        else
+                            report.failure.printStackTrace()
                     }
                 }
             }
