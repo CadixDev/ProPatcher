@@ -53,7 +53,7 @@ class MakePatchesTask extends DefaultTask {
         base.eachFileRecurse(FileType.DIRECTORIES){ file -> if (file.list().length == 0) dirs.add(file) }
         dirs.reverse().each{ it.delete() } //Do it in reverse order do we delete deepest first
     }
-    
+
     @TaskAction
     void doTask() {
         if (!patches.exists())
@@ -82,11 +82,11 @@ class MakePatchesTask extends DefaultTask {
         }
         paths.each{ makePatch(it, null, new File(target, it)) } //Added files!
     }
-    
+
     def makePatch(relative, original, modified) {
         String originalRelative = original == null ? '/dev/null' : originalPrefix + relative
         String modifiedRelative = !modified.exists() ? '/dev/null' : modifiedPrefix + relative
-        
+
         def originalData = original == null ? "" : original.getText("UTF-8")
         def modifiedData = !modified.exists() ? "" : modified.getText("UTF-8")
 
@@ -99,6 +99,7 @@ class MakePatchesTask extends DefaultTask {
 
             final String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
                     new StringReader(originalData), new StringReader(modifiedData), 3)
+                    .replaceAll('\r?\n', '\n') //Normalize to linux line endings
 
             patchFile.newOutputStream().withStream {
                 s -> s.write(unifiedDiff.getBytes(StandardCharsets.UTF_8))
