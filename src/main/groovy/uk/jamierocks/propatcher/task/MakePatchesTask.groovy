@@ -43,6 +43,7 @@ class MakePatchesTask extends DefaultTask {
     @Input File patches
     @Input @Optional String originalPrefix = 'a/'
     @Input @Optional String modifiedPrefix = 'b/'
+    @Input boolean ignoreWhitespace = true
 
     static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
@@ -90,7 +91,7 @@ class MakePatchesTask extends DefaultTask {
         def originalData = original == null ? "" : original.getText("UTF-8")
         def modifiedData = !modified.exists() ? "" : modified.getText("UTF-8")
 
-        final Diff diff = Diff.diff(new StringReader(originalData), new StringReader(modifiedData), true)
+        final Diff diff = Diff.diff(new StringReader(originalData), new StringReader(modifiedData), ignoreWhitespace)
 
         if (!diff.isEmpty()) {
             final File patchFile = new File(patches, "${relative}.patch")
