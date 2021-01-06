@@ -50,14 +50,17 @@ class ProPatcherPlugin implements Plugin<Project> {
                     patches = extension.patches
                     originalPrefix = extension.originalPrefix
                     modifiedPrefix = extension.modifiedPrefix
+                    threads = extension.threads
                 }
                 tasks.applyPatches.with {
                     target = extension.target
                     patches = extension.patches
+                    threads = extension.threads
                 }
                 tasks.resetSources.with {
                     root = extension.root
                     target = extension.target
+                    threads = extension.threads
                 }
             }
         }

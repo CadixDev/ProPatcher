@@ -28,6 +28,9 @@ package uk.jamierocks.propatcher.task
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 
@@ -35,6 +38,7 @@ class ResetSourcesTask extends DefaultTask {
 
     File root
     File target
+    int threads = -1
 
     static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
@@ -48,6 +52,8 @@ class ResetSourcesTask extends DefaultTask {
     
     @TaskAction
     void doTask() {
+        def executor = threads < 0 ? Executors.newWorkStealingPool() : Executors.newWorkStealingPool(threads)
+        def futures = []
         def existing = []
         if (!target.exists())
             target.mkdirs()
@@ -60,15 +66,17 @@ class ResetSourcesTask extends DefaultTask {
                     if (!output.exists())
                         output.mkdirs()
                 } else {
-                    def data = file.bytes
-                    if (output.exists()) {
-                        if (data != output.bytes) //We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                    futures += CompletableFuture.runAsync({
+                        def data = file.bytes
+                        if (output.exists()) {
+                            if (data != output.bytes) // We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                                output.bytes = data
+                        } else {
+                            if (!output.parentFile.exists())
+                                output.parentFile.mkdirs()
                             output.bytes = data
-                    } else {
-                        if (!output.parentFile.exists())
-                            output.parentFile.mkdirs()
-                        output.bytes = data
-                    }
+                        }
+                    }, executor)
                     existing.remove(relative)
                 }
             }
@@ -80,15 +88,17 @@ class ResetSourcesTask extends DefaultTask {
                     if (!output.exists())
                         output.mkdirs()
                 } else {
-                    def data = zip.getInputStream(ent).bytes
-                    if (output.exists()) {
-                        if (data != output.bytes) //We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                    futures += CompletableFuture.runAsync({
+                        def data = zip.getInputStream(ent).bytes
+                        if (output.exists()) {
+                            if (data != output.bytes) //We do a check of the file contents here because reading is cheaper then writing, and it saves harddrive damage, amust other things
+                                output.bytes = data
+                        } else {
+                            if (!output.parentFile.exists())
+                                output.parentFile.mkdirs()
                             output.bytes = data
-                    } else {
-                        if (!output.parentFile.exists())
-                            output.parentFile.mkdirs()
-                        output.bytes = data
-                    }
+                        }
+                    }, executor)
                     existing.remove(ent.name)
                 }
             }
@@ -96,5 +106,7 @@ class ResetSourcesTask extends DefaultTask {
         
         existing.each{ file -> new File(target, file).delete() } //Delete extra files
         deleteEmpty(target)
+
+        CompletableFuture.allOf(futures as CompletableFuture[]).get()
     }
 }

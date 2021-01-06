@@ -33,13 +33,20 @@ import com.cloudbees.diff.PatchException
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+
 class ApplyPatchesTask extends DefaultTask {
 
     File target
     File patches
+    int threads = -1
 
     @TaskAction
     void doTask() {
+        def executor = threads < 0 ? Executors.newWorkStealingPool() : Executors.newWorkStealingPool(threads)
+        def futures = []
+
         if (!patches.exists()) {
             patches.mkdirs() // Make sure patches directory exists
         }
@@ -47,21 +54,26 @@ class ApplyPatchesTask extends DefaultTask {
         boolean failed = false
         patches.eachFileRecurse(FileType.FILES) { file ->
             if (file.path.endsWith('.patch')) {
-                ContextualPatch patch = ContextualPatch.create(file, target)
-                patch.patch(false).each { report ->
-                    if (report.status == PatchStatus.Patched) {
-                        report.originalBackupFile.delete() //lets delete the backup because spam
-                    } else {
-                        failed = true
-                        println 'Failed to apply: ' + file
-                        if (report.failure instanceof PatchException)
-                            println '    ' + report.failure.message
-                        else
-                            report.failure.printStackTrace()
+                futures += CompletableFuture.runAsync({
+                    ContextualPatch patch = ContextualPatch.create(file, target)
+                    patch.patch(false).each { report ->
+                        if (report.status == PatchStatus.Patched) {
+                            report.originalBackupFile.delete() //lets delete the backup because spam
+                        } else {
+                            failed = true
+                            println 'Failed to apply: ' + file
+                            if (report.failure instanceof PatchException)
+                                println '    ' + report.failure.message
+                            else
+                                report.failure.printStackTrace()
+                        }
                     }
-                }
+                }, executor)
             }
         }
+
+        CompletableFuture.allOf(futures as CompletableFuture[]).get()
+
         def NUL = new File('/dev/null')
         if (System.getProperty('os.name').toLowerCase().contains('win') && NUL.exists()) //patcher is standerdized to create /dev/null targets even on windows, so delete this to clean that up
             NUL.delete()

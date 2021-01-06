@@ -37,4 +37,5 @@ class ProPatcherExtension {
 
     String modifiedPrefix = 'b/'
 
+    int threads = -1
 }

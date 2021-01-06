@@ -33,6 +33,8 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 
@@ -44,6 +46,7 @@ class MakePatchesTask extends DefaultTask {
     @Input @Optional String originalPrefix = 'a/'
     @Input @Optional String modifiedPrefix = 'b/'
     @Input boolean ignoreWhitespace = true
+    int threads = -1
 
     static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
@@ -64,24 +67,40 @@ class MakePatchesTask extends DefaultTask {
     }
 
     void process(File root, File target) {
+        def executor = threads < 0 ? Executors.newWorkStealingPool() : Executors.newWorkStealingPool(threads)
+        def futures = []
+
         def paths = []
         target.eachFileRecurse(FileType.FILES){ file -> if (!file.path.endsWith('~')) paths.add relative(target, file) }
         if (root.isDirectory()) {
             root.eachFileRecurse(FileType.FILES) { file ->
                 def relative = relative(root, file)
-                file.withInputStream{stream -> makePatch(relative, stream, new File(target, relative))}
+                futures += CompletableFuture.runAsync({
+                    file.withInputStream {stream ->
+                        makePatch(relative, stream, new File(target, relative))
+                    }
+                }, executor)
                 paths.remove(relative)
             }
         } else {
             def zip = new ZipFile(root)
             zip.entries().each { ent ->
                 if (!ent.isDirectory()) {
-                    makePatch(ent.name, zip.getInputStream(ent), new File(target, ent.name))
+                    futures += CompletableFuture.runAsync({
+                        makePatch(ent.name, zip.getInputStream(ent), new File(target, ent.name))
+                    }, executor)
                     paths.remove(ent.name)
                 }
             }
         }
-        paths.each{ makePatch(it, null, new File(target, it)) } //Added files!
+
+        paths.each {
+            futures += CompletableFuture.runAsync({
+                makePatch(it, null, new File(target, it)) // Added files!
+            }, executor)
+        }
+
+        CompletableFuture.allOf(futures as CompletableFuture[]).get()
     }
 
     def makePatch(relative, original, modified) {
