@@ -75,11 +75,11 @@ class MakePatchesTask extends DefaultTask {
         if (root.isDirectory()) {
             root.eachFileRecurse(FileType.FILES) { file ->
                 def relative = relative(root, file)
-                file.withInputStream {stream ->
-                    futures += CompletableFuture.runAsync({
+                futures += CompletableFuture.runAsync({
+                    file.withInputStream {stream ->
                         makePatch(relative, stream, new File(target, relative))
-                    }, executor)
-                }
+                    }
+                }, executor)
                 paths.remove(relative)
             }
         } else {
