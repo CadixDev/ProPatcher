@@ -29,6 +29,7 @@ import com.cloudbees.diff.Diff
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
@@ -38,9 +39,9 @@ import java.util.zip.ZipFile
 
 class MakePatchesTask extends DefaultTask {
 
-    @Input File root
-    @Input File target
-    @Input File patches
+    @InputFile File root
+    @InputFile File target
+    @InputFile File patches
     @Input @Optional String originalPrefix = 'a/'
     @Input @Optional String modifiedPrefix = 'b/'
     @Input boolean ignoreWhitespace = true
@@ -100,7 +101,7 @@ class MakePatchesTask extends DefaultTask {
 
             final String unifiedDiff = diff.toUnifiedDiff(originalRelative, modifiedRelative,
                     new StringReader(originalData), new StringReader(modifiedData), 3)
-                    .replaceAll('\r?\n', '\n') //Normalize to linux line endings
+                    .replaceAll('\r?\n', '\n') // Normalise to linux line endings
 
             patchFile.newOutputStream().withStream {
                 s -> s.write(unifiedDiff.getBytes(StandardCharsets.UTF_8))

@@ -25,16 +25,24 @@
 
 package uk.jamierocks.propatcher
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+
 class ProPatcherExtension {
 
+    @InputFile
     File root
 
+    @InputFile
     File target
 
+    @InputFile
     File patches
 
+    @Input
     String originalPrefix = 'a/'
 
+    @Input
     String modifiedPrefix = 'b/'
 
 }

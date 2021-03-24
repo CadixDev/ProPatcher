@@ -27,14 +27,15 @@ package uk.jamierocks.propatcher.task
 
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 import java.util.regex.Matcher
 import java.util.zip.ZipFile
 
 class ResetSourcesTask extends DefaultTask {
 
-    File root
-    File target
+    @InputFile File root
+    @InputFile File target
 
     static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
