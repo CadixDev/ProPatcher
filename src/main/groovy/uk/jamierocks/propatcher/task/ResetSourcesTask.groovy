@@ -27,6 +27,7 @@ package uk.jamierocks.propatcher.task
 
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
@@ -58,7 +59,7 @@ class ResetSourcesTask extends DefaultTask {
         target.eachFileRecurse(FileType.FILES){ file -> existing.add relative(target, file) }
         def root = rootZip == null ? rootDir : rootZip
         if (root == null)
-            throw new RuntimeException("At least one of rootZip and rootDir has to be specified!")
+            throw new InvalidUserDataException("At least one of rootZip and rootDir has to be specified!")
         if (root.isDirectory()) {
             root.eachFileRecurse { file ->
                 def relative = relative(root, file)

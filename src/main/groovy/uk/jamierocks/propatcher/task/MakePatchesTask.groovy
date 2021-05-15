@@ -28,6 +28,7 @@ package uk.jamierocks.propatcher.task
 import com.cloudbees.diff.Diff
 import groovy.io.FileType
 import org.gradle.api.DefaultTask
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
@@ -65,7 +66,7 @@ class MakePatchesTask extends DefaultTask {
 
         def root = rootZip == null ? rootDir : rootZip
         if (root == null)
-            throw new RuntimeException("At least one of rootZip and rootDir has to be specified!")
+            throw new InvalidUserDataException("At least one of rootZip and rootDir has to be specified!")
         process(root, target) // Make the patches
     }
 
