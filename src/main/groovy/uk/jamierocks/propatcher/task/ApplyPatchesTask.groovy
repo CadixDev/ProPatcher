@@ -31,13 +31,13 @@ import com.cloudbees.diff.ContextualPatch
 import com.cloudbees.diff.ContextualPatch.PatchStatus
 import com.cloudbees.diff.PatchException
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
 
 class ApplyPatchesTask extends DefaultTask {
 
-    @InputFile File target
-    @InputFile File patches
+    @InputDirectory File target
+    @InputDirectory File patches
 
     @TaskAction
     void doTask() {

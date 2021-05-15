@@ -36,9 +36,13 @@ apply plugin: 'uk.jamierocks.propatcher'
 ## Example
 ```gradle
 patches {
-    root = file('root') // This is a directory
-    target = file('target') // This is also a directory
-    patches = file('patches') // This is again a directory
+    // This is a directory input, you can also use zip file inputs using rootZip
+    rootDir = file('root')
+    // This is a directory input
+    target = file('target')
+    
+    // This is a directory output
+    patches = file('patches')
 }
 ```
 

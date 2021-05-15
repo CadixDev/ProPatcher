@@ -45,7 +45,8 @@ class ProPatcherPlugin implements Plugin<Project> {
 
             afterEvaluate {
                 tasks.makePatches.with {
-                    root = extension.root
+                    rootZip = extension.rootZip
+                    rootDir = extension.rootDir
                     target = extension.target
                     patches = extension.patches
                     originalPrefix = extension.originalPrefix
@@ -56,7 +57,8 @@ class ProPatcherPlugin implements Plugin<Project> {
                     patches = extension.patches
                 }
                 tasks.resetSources.with {
-                    root = extension.root
+                    rootZip = extension.rootZip
+                    rootDir = extension.rootDir
                     target = extension.target
                 }
             }
