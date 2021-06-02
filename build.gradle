@@ -10,7 +10,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 group = 'uk.jamierocks'
-version = '2.0.0'
+version = '2.0.1-SNAPSHOT'
 description = 'ProPatcher is a Gradle plugin for creating .patch files on the go.'
 
 repositories {
