@@ -32,6 +32,7 @@ import uk.jamierocks.propatcher.task.MakePatchesTask
 import uk.jamierocks.propatcher.task.ResetSourcesTask
 
 class ProPatcherPlugin implements Plugin<Project> {
+
     @Override
     void apply(Project project) {
         project.with {

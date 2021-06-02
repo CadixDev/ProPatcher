@@ -32,8 +32,11 @@ import org.gradle.api.tasks.Optional
 
 class ProPatcherExtension {
 
-    @InputFile @Optional File rootZip = null
-    @InputDirectory @Optional File rootDir = null
+    @InputFile @Optional
+    File rootZip = null
+
+    @InputDirectory @Optional
+    File rootDir = null
 
     @InputDirectory
     File target

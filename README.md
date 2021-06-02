@@ -1,17 +1,17 @@
 ProPatcher
 ==========
+
 ProPatcher is a Gradle plugin for creating patch files on the go.
 
-**ProPatcher requires Java 1.8**
-
 ## Installation
+
 ProPatcher has been added to Gradle's plugin portal, and can be used using the new
 plugin mechanism introduced in Gradle 2.1.
 You can find the plugin [here](https://plugins.gradle.org/plugin/uk.jamierocks.propatcher).
 
 ```gradle
 plugins {
-    id 'uk.jamierocks.propatcher' version '1.2.3'
+    id 'uk.jamierocks.propatcher' version '2.0.0'
 }
 ```
 
@@ -26,7 +26,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'gradle.plugin.uk.jamierocks:propatcher:1.2.3'
+        classpath 'gradle.plugin.uk.jamierocks:propatcher:2.0.0'
     }
 }
 
@@ -34,6 +34,7 @@ apply plugin: 'uk.jamierocks.propatcher'
 ```
 
 ## Example
+
 ```gradle
 patches {
     // This is a directory input, you can also use zip file inputs using rootZip
@@ -47,6 +48,7 @@ patches {
 ```
 
 ## Tasks
+
 | Name           | Description                                           |
 | -------------- | ----------------------------------------------------- |
 | `makePatches`  | Make all necessary patch files.                       |
