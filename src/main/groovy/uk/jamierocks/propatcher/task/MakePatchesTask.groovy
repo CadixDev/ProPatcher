@@ -32,6 +32,7 @@ import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
@@ -47,7 +48,7 @@ class MakePatchesTask extends DefaultTask {
     @InputDirectory File patches
     @Input @Optional String originalPrefix = 'a/'
     @Input @Optional String modifiedPrefix = 'b/'
-    @Input boolean ignoreWhitespace = true
+    private boolean ignoreWhitespace = true
 
     static def relative(base, file) {
         return file.path.substring(base.path.length() + 1).replaceAll(Matcher.quoteReplacement(File.separator), '/') //Replace is to normalize windows to linux/zip format
@@ -115,4 +116,13 @@ class MakePatchesTask extends DefaultTask {
         }
     }
 
+    @Input
+    boolean isIgnoreWhitespace() {
+        return ignoreWhitespace
+    }
+
+    @Internal
+    boolean getIgnoreWhitespace() {
+        return ignoreWhitespace
+    }
 }
